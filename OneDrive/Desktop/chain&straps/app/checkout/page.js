@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, ShieldCheck, Truck, Lock, CheckCircle } from "lucide-react";
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1); // 1: Info, 2: Shipping, 3: Success
   const [loading, setLoading] = useState(false);
@@ -46,11 +48,55 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    // Simulate order processing (replace with real payment gateway later)
-    await new Promise((r) => setTimeout(r, 1800));
-    setLoading(false);
-    clearCart();
-    setStep(3);
+
+    try {
+      const orderItems = cartItems.map(item => ({
+        product: item._id || item.id, // Depending on how you store product ID in cart
+        title: item.title,
+        quantity: item.quantity,
+        image: item.image || item.images?.[0] || '',
+        price: item.price
+      }));
+
+      const payload = {
+        orderItems,
+        shippingAddress: {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          address: form.address,
+          city: form.city,
+          country: form.country,
+          zip: form.zip,
+          email: form.email,
+          phone: form.phone
+        },
+        paymentMethod: 'Credit Card', // Hardcoded for now
+        itemsPrice: Number(cartTotal),
+        shippingPrice: cartTotal > 0 ? 15 : 0,
+        totalAmount: Number(cartTotal) + (cartTotal > 0 ? 15 : 0),
+        user: user ? user._id || user.id : null
+      };
+
+      const API = "http://137.184.102.82:5000/api";
+      const res = await fetch(`${API}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+
+      clearCart();
+      setStep(3);
+    } catch (err) {
+      console.error("Failed to place order:", err);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const usdTotal = Number(cartTotal).toFixed(2);
