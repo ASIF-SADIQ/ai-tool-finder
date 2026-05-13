@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import CartDrawer from "@/components/CartDrawer";
 
 const montserrat = Montserrat({
@@ -28,12 +29,14 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${montserrat.variable} ${cormorant.variable}`}>
       <body className="bg-bg-primary text-text-primary antialiased selection:bg-gold selection:text-bg-primary">
         <AuthProvider>
-          <CartProvider>
-            <Navbar />
-            <CartDrawer />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <Navbar />
+              <CartDrawer />
+              <main className="min-h-screen">{children}</main>
+              <Footer />
+            </CartProvider>
+          </WishlistProvider>
         </AuthProvider>
       </body>
     </html>

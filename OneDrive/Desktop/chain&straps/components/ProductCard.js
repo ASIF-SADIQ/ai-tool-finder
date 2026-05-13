@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { useWishlist } from "@/context/WishlistContext";
 
 export default function ProductCard({ product }) {
   const [isHovered, setIsHovered] = useState(false);
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  
+  const handleId = product.Handle || product.handle || product._id;
+  const isHearted = isInWishlist(handleId);
 
   // MongoDB fields - images is now an array from aggregation grouping
   const images = (product.images || []).filter(Boolean);
@@ -44,6 +51,26 @@ export default function ProductCard({ product }) {
             className="object-cover w-full h-full transition-transform duration-700 scale-105"
           />
         </div>
+
+        {/* Wishlist Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            toggleWishlist(product);
+          }}
+          className="absolute top-3 right-3 z-30 p-2 bg-bg-primary/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-bg-primary"
+        >
+          <motion.div
+            whileTap={{ scale: 0.8 }}
+            animate={isHearted ? { scale: [1, 1.2, 1] } : {}}
+            transition={{ duration: 0.3 }}
+          >
+            <Heart 
+              size={18} 
+              className={isHearted ? "fill-gold text-gold" : "text-text-primary"} 
+            />
+          </motion.div>
+        </button>
 
         {/* Quick Add Button overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex items-center justify-center">

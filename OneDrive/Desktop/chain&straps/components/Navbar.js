@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, ShoppingBag, Menu, X, User, LogOut, Settings, Package } from "lucide-react";
+import { Search, ShoppingBag, Menu, X, User, LogOut, Settings, Package, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useWishlist } from "@/context/WishlistContext";
 import SearchOverlay from "./SearchOverlay";
 
 export default function Navbar() {
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { cartCount, setIsCartOpen } = useCart();
+  const { wishlistItems } = useWishlist();
   const { user, logout } = useAuth();
   const userMenuRef = useRef(null);
 
@@ -88,6 +90,16 @@ export default function Navbar() {
               className="text-text-primary hover:text-gold transition-colors">
               <Search size={22} />
             </button>
+
+            {/* Wishlist */}
+            <Link href="/wishlist" className="text-text-primary hover:text-gold transition-colors relative">
+              <Heart size={22} />
+              {wishlistItems && wishlistItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-gold text-bg-primary text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
 
             {/* User / Auth Icon */}
             <div className="relative" ref={userMenuRef}>
