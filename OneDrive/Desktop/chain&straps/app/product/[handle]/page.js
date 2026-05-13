@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/AddToCartButton";
+import AddToWishlistButton from "@/components/AddToWishlistButton";
 import ProductGallery from "@/components/ProductGallery";
 
 const API_BASE = "http://137.184.102.82:5000/api";
@@ -119,9 +120,9 @@ export default async function ProductDetailPage({ params }) {
 
             <AddToCartButton product={normalizedProduct} />
 
-            <button className="bg-transparent border border-gold text-gold w-full py-5 text-sm font-bold mb-8 tracking-widest uppercase hover:bg-gold/10 transition-colors">
-              WISHLIST
-            </button>
+            <div className="mb-8">
+              <AddToWishlistButton product={normalizedProduct} />
+            </div>
 
             <a
               href={`https://pinterest.com/pin/create/button/?url=https://chainandstraps.com/product/${product.Handle}&media=${encodeURIComponent(images[0] || "")}&description=${encodeURIComponent(product.Title)}`}
