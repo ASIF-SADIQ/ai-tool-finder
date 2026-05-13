@@ -211,10 +211,9 @@ function OrderCard({ order }) {
         <div className="min-w-[400px] flex items-center justify-between relative">
           {/* Connecting Line Base */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[#222] z-0"></div>
-          {/* Connecting Line Active */}
           <div 
             className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gold z-0 transition-all duration-500"
-            style={{ width: \`\${(activeIndex / (stages.length - 1)) * 100}%\` }}
+            style={{ width: `${(activeIndex / (stages.length - 1)) * 100}%` }}
           ></div>
 
           {stages.map((stage, index) => {
@@ -225,15 +224,15 @@ function OrderCard({ order }) {
             return (
               <div key={stage.id} className="relative z-10 flex flex-col items-center">
                 <div 
-                  className={\`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors duration-300 \${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors duration-300 ${
                     isCompleted 
                       ? 'bg-gold border-gold text-black' 
                       : 'bg-bg-secondary border-[#444] text-[#666]'
-                  } \${isCurrent && 'ring-4 ring-gold/20'}\`}
+                  } ${isCurrent && 'ring-4 ring-gold/20'}`}
                 >
                   <Icon size={18} />
                 </div>
-                <p className={\`mt-3 text-[10px] tracking-widest uppercase font-bold \${isCompleted ? 'text-gold' : 'text-[#666]'}\`}>
+                <p className={`mt-3 text-[10px] tracking-widest uppercase font-bold ${isCompleted ? 'text-gold' : 'text-[#666]'}`}>
                   {stage.label}
                 </p>
               </div>
