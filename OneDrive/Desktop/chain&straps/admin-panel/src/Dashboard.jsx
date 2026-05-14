@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Play, Pause, Package, Clock, CheckCircle, Settings, AlertTriangle, List, Users, ShoppingCart } from 'lucide-react';
+import { Search, Play, Pause, Package, Clock, CheckCircle, Settings, AlertTriangle, List, Users, ShoppingCart, Plus, Trash2, Eye, EyeOff, Save } from 'lucide-react';
 
 const API_BASE = 'http://137.184.102.82:5000/api'; // Aapke Droplet ka IP
 
@@ -17,6 +17,9 @@ const Dashboard = () => {
   
   // Settings State
   const [accounts, setAccounts] = useState([]);
+  const [newAccount, setNewAccount] = useState({ username: '', access_token: '', board_id: '' });
+  const [showTokens, setShowTokens] = useState({});
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [isAutomationRunning, setIsAutomationRunning] = useState(false);
 
   // Logs State
@@ -198,12 +201,140 @@ const Dashboard = () => {
 
         {/* Tab Content: Settings */}
         {activeTab === 'settings' && (
-          <div className="bg-white p-8 border rounded-xl shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Pinterest Account Rotation (7 Tokens)</h2>
-            <p className="text-gray-500 mb-6">In tokens ke zariye Anti-Gravity engine khud ba khud rotate kar ke post karega.</p>
-            {/* Yahan aap aage ja kar apne 7 tokens add/edit karne ke liye input fields add kar lenge */}
-            <div className="bg-blue-50 text-blue-800 p-4 rounded border border-blue-200">
-               Total {accounts.length} accounts configured. (You can build a form here later to push accounts via API).
+          <div className="space-y-6">
+            <div className="bg-white p-6 border rounded-xl shadow-sm">
+              <h2 className="text-xl font-bold mb-1">Pinterest Account Manager</h2>
+              <p className="text-gray-500 text-sm">Add up to 7 Pinterest accounts. The engine rotates between them automatically to avoid bans.</p>
+            </div>
+
+            <div className="bg-white p-6 border rounded-xl shadow-sm">
+              <h3 className="font-semibold text-gray-800 mb-3">📌 Pin Preview (How each post will look)</h3>
+              <div className="bg-gray-50 border rounded-lg p-4 text-sm text-gray-700 space-y-1 font-mono">
+                <p><span className="font-bold">Title:</span> [Product Name]</p>
+                <p><span className="font-bold">Description:</span></p>
+                <p className="pl-4 text-gray-600">✨ [Product Title] | $[Price]</p>
+                <p className="pl-4 text-gray-600">Elevate your style with this premium piece from Chain & Straps. Click to shop now!</p>
+                <p className="pl-4 text-blue-500">#LuxuryFashion #DesignerBags #OOTD #StyleInspo #[VendorName] #ChainAndStraps</p>
+                <p><span className="font-bold">Link:</span> <span className="text-blue-600">chainandstraps.com/product/[handle]</span></p>
+              </div>
+            </div>
+
+            {accounts.length > 0 && (
+              <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold text-gray-800">Configured Accounts ({accounts.length})</h3>
+                </div>
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
+                      <th className="p-4 border-b">#</th>
+                      <th className="p-4 border-b">Username</th>
+                      <th className="p-4 border-b">Access Token</th>
+                      <th className="p-4 border-b">Board ID</th>
+                      <th className="p-4 border-b">Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accounts.map((acc, i) => (
+                      <tr key={i} className="border-b hover:bg-gray-50 text-sm">
+                        <td className="p-4 text-gray-400">{i + 1}</td>
+                        <td className="p-4 font-semibold text-gray-900">{acc.username}</td>
+                        <td className="p-4">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono text-xs text-gray-500">
+                              {showTokens[i] ? acc.access_token : `${(acc.access_token || '').slice(0, 8)}••••••••`}
+                            </span>
+                            <button onClick={() => setShowTokens(p => ({...p, [i]: !p[i]}))} className="text-gray-400 hover:text-gray-700">
+                              {showTokens[i] ? <EyeOff size={14}/> : <Eye size={14}/>}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-4 font-mono text-xs text-gray-500">{acc.board_id}</td>
+                        <td className="p-4">
+                          <button
+                            onClick={async () => {
+                              const updated = accounts.filter((_, idx) => idx !== i);
+                              setSettingsSaving(true);
+                              await axios.post(`${API_BASE}/settings`, { accounts: updated });
+                              setAccounts(updated);
+                              setSettingsSaving(false);
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 size={16}/>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="bg-white p-6 border rounded-xl shadow-sm">
+              <h3 className="font-semibold text-gray-800 mb-4 flex items-center"><Plus size={16} className="mr-2"/>Add New Pinterest Account</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pinterest Username</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. chainandstraps"
+                    value={newAccount.username}
+                    onChange={e => setNewAccount(p => ({...p, username: e.target.value}))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Access Token</label>
+                  <input
+                    type="password"
+                    placeholder="Pinterest OAuth Token"
+                    value={newAccount.access_token}
+                    onChange={e => setNewAccount(p => ({...p, access_token: e.target.value}))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Board ID</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 123456789"
+                    value={newAccount.board_id}
+                    onChange={e => setNewAccount(p => ({...p, board_id: e.target.value}))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  if (!newAccount.username || !newAccount.access_token || !newAccount.board_id) {
+                    alert('Please fill all 3 fields.');
+                    return;
+                  }
+                  setSettingsSaving(true);
+                  const updated = [...accounts, newAccount];
+                  await axios.post(`${API_BASE}/settings`, { accounts: updated });
+                  setAccounts(updated);
+                  setNewAccount({ username: '', access_token: '', board_id: '' });
+                  setSettingsSaving(false);
+                }}
+                disabled={settingsSaving}
+                className="flex items-center space-x-2 bg-black text-white px-5 py-2.5 rounded-lg hover:bg-gray-800 disabled:opacity-50 text-sm font-semibold"
+              >
+                <Save size={16}/>
+                <span>{settingsSaving ? 'Saving...' : 'Save Account'}</span>
+              </button>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+              <h3 className="font-semibold text-amber-800 mb-2">📋 How to Get Your Pinterest Access Token</h3>
+              <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+                <li>Go to <strong>developers.pinterest.com</strong> and log in with your Pinterest account.</li>
+                <li>Click <strong>"My Apps"</strong> and create a New App.</li>
+                <li>Under permissions, enable <strong>"Pins: Read & Write"</strong> and <strong>"Boards: Read"</strong>.</li>
+                <li>Generate an <strong>Access Token</strong> from the App page and paste it above.</li>
+                <li>To find your <strong>Board ID</strong>: open a Pinterest board, the number in the URL is the ID (e.g. pinterest.com/user/<strong>123456789</strong>/).</li>
+              </ol>
             </div>
           </div>
         )}
