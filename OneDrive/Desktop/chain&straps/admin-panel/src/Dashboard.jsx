@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Play, Pause, Package, Clock, CheckCircle, Settings, AlertTriangle, List, Users } from 'lucide-react';
+import { Search, Play, Pause, Package, Clock, CheckCircle, Settings, AlertTriangle, List, Users, ShoppingCart } from 'lucide-react';
 
 const API_BASE = 'http://137.184.102.82:5000/api'; // Aapke Droplet ka IP
 
@@ -11,6 +11,9 @@ const Dashboard = () => {
   // Inventory State
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
+
+  // Orders State
+  const [orders, setOrders] = useState([]);
   
   // Settings State
   const [accounts, setAccounts] = useState([]);
@@ -29,6 +32,7 @@ const Dashboard = () => {
     if (activeTab === 'settings') fetchSettings();
     if (activeTab === 'logs') fetchLogs();
     if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'orders') fetchOrders();
   }, [activeTab, search]);
 
   const fetchStats = async () => {
@@ -82,6 +86,31 @@ const Dashboard = () => {
     }
   };
 
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/orders`, {
+        headers: { Authorization: `Bearer ${ADMIN_TOKEN}` }
+      });
+      setOrders(res.data.orders || []);
+    } catch (err) {
+      console.error('Orders fetch failed:', err.message);
+    }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await axios.put(`${API_BASE}/orders/${orderId}/status`, 
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${ADMIN_TOKEN}` } }
+      );
+      // Refresh orders
+      fetchOrders();
+    } catch (err) {
+      console.error('Failed to update status:', err.message);
+      alert('Failed to update status');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -129,11 +158,12 @@ const Dashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b mb-6">
-          <button onClick={() => setActiveTab('inventory')} className={`flex items-center px-6 py-3 font-semibold ${activeTab === 'inventory' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><List className="w-4 h-4 mr-2"/> Inventory</button>
-          <button onClick={() => setActiveTab('settings')} className={`flex items-center px-6 py-3 font-semibold ${activeTab === 'settings' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><Settings className="w-4 h-4 mr-2"/> API Settings</button>
-          <button onClick={() => setActiveTab('logs')} className={`flex items-center px-6 py-3 font-semibold ${activeTab === 'logs' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><AlertTriangle className="w-4 h-4 mr-2"/> Error Logs</button>
-          <button onClick={() => setActiveTab('users')} className={`flex items-center px-6 py-3 font-semibold ${activeTab === 'users' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><Users className="w-4 h-4 mr-2"/> Customers</button>
+        <div className="flex border-b mb-6 overflow-x-auto">
+          <button onClick={() => setActiveTab('inventory')} className={`flex items-center px-6 py-3 font-semibold whitespace-nowrap ${activeTab === 'inventory' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><List className="w-4 h-4 mr-2"/> Inventory</button>
+          <button onClick={() => setActiveTab('orders')} className={`flex items-center px-6 py-3 font-semibold whitespace-nowrap ${activeTab === 'orders' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><ShoppingCart className="w-4 h-4 mr-2"/> Orders</button>
+          <button onClick={() => setActiveTab('settings')} className={`flex items-center px-6 py-3 font-semibold whitespace-nowrap ${activeTab === 'settings' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><Settings className="w-4 h-4 mr-2"/> API Settings</button>
+          <button onClick={() => setActiveTab('logs')} className={`flex items-center px-6 py-3 font-semibold whitespace-nowrap ${activeTab === 'logs' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><AlertTriangle className="w-4 h-4 mr-2"/> Error Logs</button>
+          <button onClick={() => setActiveTab('users')} className={`flex items-center px-6 py-3 font-semibold whitespace-nowrap ${activeTab === 'users' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}><Users className="w-4 h-4 mr-2"/> Customers</button>
         </div>
 
         {/* Tab Content: Inventory */}
@@ -232,6 +262,69 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td className="p-4 text-gray-500">{new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* Tab Content: Orders */}
+        {activeTab === 'orders' && (
+          <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h2 className="text-xl font-bold">Manage Orders ({orders.length})</h2>
+              <button onClick={fetchOrders} className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">Refresh</button>
+            </div>
+            {orders.length === 0 ? (
+              <p className="p-6 text-gray-500">No orders found.</p>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 text-gray-500 text-sm uppercase">
+                    <th className="p-4 border-b">Order ID</th>
+                    <th className="p-4 border-b">Date</th>
+                    <th className="p-4 border-b">Customer</th>
+                    <th className="p-4 border-b">Total</th>
+                    <th className="p-4 border-b">Status</th>
+                    <th className="p-4 border-b">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((o) => (
+                    <tr key={o._id} className="border-b hover:bg-gray-50 text-sm">
+                      <td className="p-4 font-mono text-xs text-gray-500">{o._id.substring(o._id.length - 8).toUpperCase()}</td>
+                      <td className="p-4 text-gray-600">{new Date(o.createdAt).toLocaleDateString()}</td>
+                      <td className="p-4">
+                        <p className="font-semibold text-gray-900">{o.shippingAddress?.firstName || o.user?.name || 'Guest'}</p>
+                        <p className="text-xs text-gray-500">{o.shippingAddress?.email || o.user?.email}</p>
+                      </td>
+                      <td className="p-4 font-bold text-gray-900">${o.totalAmount.toFixed(2)}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                          o.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                          o.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                          o.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
+                          o.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {o.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <select 
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-black focus:border-black block w-full p-2"
+                          value={o.status}
+                          onChange={(e) => updateOrderStatus(o._id, e.target.value)}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Processing">Processing</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
