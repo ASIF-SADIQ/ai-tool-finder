@@ -7,24 +7,28 @@ export default function AboutPage() {
   return (
     <div className="bg-bg-primary text-text-primary min-h-screen pt-24 pb-20 overflow-hidden">
       {/* Section 1: Hero */}
-      <motion.section 
-        initial={{ opacity: 0 }} 
+      <motion.section
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2 }}
         className="h-[70vh] flex flex-col items-center justify-center text-center px-4 relative"
       >
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-bg-primary z-10" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src="https://images.unsplash.com/photo-1549439602-43ebca2327af?q=80&w=2070&auto=format&fit=crop" 
-            alt="Luxury Watch Movement" 
-            className="w-full h-full object-cover opacity-30 grayscale"
-          />
+          {/* Background Video */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover opacity-40 grayscale"
+          >
+            <source src="https://cdn.pixabay.com/video/2019/11/05/28734-370597380_large.mp4" type="video/mp4" />
+          </video>
         </div>
-        
+
         <div className="relative z-20">
-          <motion.h2 
+          <motion.h2
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
@@ -32,7 +36,7 @@ export default function AboutPage() {
           >
             Timeless Elegance, Redefined
           </motion.h2>
-          <motion.h1 
+          <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
@@ -40,7 +44,7 @@ export default function AboutPage() {
           >
             Chain & Straps
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.8 }}
@@ -56,9 +60,9 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-center border border-[#222]">
           <div className="h-[500px] lg:h-[700px] bg-bg-secondary overflow-hidden relative group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=1915&auto=format&fit=crop" 
-              alt="Craftsmanship" 
+            <img
+              src="https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=1915&auto=format&fit=crop"
+              alt="Craftsmanship"
               className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-1000 transform group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-1000" />
@@ -67,14 +71,14 @@ export default function AboutPage() {
             <h3 className="text-3xl md:text-4xl font-serif italic text-gold">Our Heritage</h3>
             <div className="space-y-6 text-text-secondary leading-relaxed font-light">
               <p>
-                Started in the heart of Lahore, Chain & Straps was born from a simple obsession: why should true luxury be out of reach for those who appreciate genuine craftsmanship?
+                Started in the heart of New York, Chain & Straps was born from a simple obsession: why should true luxury be out of reach for those who appreciate genuine craftsmanship?
               </p>
               <p>
                 We believe that luxury is a language. From the meticulous selection of premium leathers to the precision of our horological collections, we bridge the gap between global sophistication and local accessibility.
               </p>
             </div>
             <div className="pt-8 border-t border-[#222]">
-              <p className="text-xs text-text-muted uppercase tracking-[0.3em]">Lahore • Dubai • London</p>
+              <p className="text-xs text-text-muted uppercase tracking-[0.3em]">New York • California • London</p>
             </div>
           </div>
         </div>
@@ -87,14 +91,14 @@ export default function AboutPage() {
             <h3 className="text-3xl font-serif text-white mb-4">Our Core Values</h3>
             <div className="w-12 h-[1px] bg-gold mx-auto" />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
               { title: "Excellence", desc: "Every stitch and every link is inspected for perfection. We settle for nothing less than extraordinary." },
               { title: "Authenticity", desc: "100% genuine luxury selection. We stand behind the provenance and quality of every single item we curate." },
               { title: "Community", desc: "An exclusive experience designed specifically for our VIBs (Very Important Buyers). You are our legacy." }
             ].map((pillar, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -123,7 +127,7 @@ export default function AboutPage() {
               { num: "100%", label: "Authenticity" },
               { num: "24/7", label: "VIB Support" }
             ].map((stat, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -148,7 +152,7 @@ export default function AboutPage() {
             <h3 className="font-serif text-3xl md:text-4xl text-white mb-2">The Founders</h3>
             <p className="text-gold text-sm tracking-[0.3em] uppercase">Chain & Straps</p>
           </div>
-          
+
           <div className="mt-16">
             <Link href="/all" className="inline-block border border-gold text-gold px-12 py-4 text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-black transition-all duration-500">
               Explore The Collection
