@@ -33,7 +33,7 @@ export default function RefundPolicyPage() {
         </Section>
 
         <Section title="Return Eligibility">
-          <p>We accept returns within <strong className="text-white">7 days</strong> of delivery, provided the item meets the following conditions:</p>
+          <p>We accept returns within <strong className="text-white">14 days</strong> of delivery, provided the item meets the following conditions:</p>
           <ul className="list-none space-y-2 mt-3">
             {[
               "Item must be unused and in its original condition",

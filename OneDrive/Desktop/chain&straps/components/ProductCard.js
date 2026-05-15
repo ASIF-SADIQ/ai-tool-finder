@@ -38,6 +38,7 @@ export default function ProductCard({ product }) {
           <img
             src={mainImage}
             alt={title}
+            referrerPolicy="no-referrer"
             className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
           />
         </div>
@@ -48,6 +49,7 @@ export default function ProductCard({ product }) {
           <img
             src={hoverImage}
             alt={`${title} alternate`}
+            referrerPolicy="no-referrer"
             className="object-cover w-full h-full transition-transform duration-700 scale-105"
           />
         </div>
