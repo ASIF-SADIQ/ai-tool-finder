@@ -38,6 +38,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "HOME", href: "/" },
+    { name: "ALL PRODUCTS", href: "/all" },
     { name: "BRANDS", href: "/all" },
     { name: "BAGS", href: "/category/bags" },
     { name: "SHOES", href: "/category/shoes" },
@@ -152,14 +153,7 @@ export default function Navbar() {
                         <Package size={15} />
                         <span>My Orders</span>
                       </Link>
-                      {user.role === 'admin' && (
-                        <a href="http://localhost:5173" target="_blank" rel="noopener noreferrer"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center space-x-3 px-4 py-3 text-text-secondary text-sm hover:text-gold hover:bg-white/5 transition-colors">
-                          <Settings size={15} />
-                          <span>Admin Panel</span>
-                        </a>
-                      )}
+
                       <button onClick={handleLogout}
                         className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 text-sm hover:bg-white/5 transition-colors border-t border-border-color mt-1">
                         <LogOut size={15} />

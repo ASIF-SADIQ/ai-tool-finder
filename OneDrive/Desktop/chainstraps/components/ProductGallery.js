@@ -14,8 +14,8 @@ export default function ProductGallery({ images, title }) {
 
   return (
     <div className="lg:sticky lg:top-32">
-      {/* Main Image — smaller, max-w-md, centered */}
-      <div className="relative max-w-md mx-auto bg-bg-secondary overflow-hidden group aspect-[4/5]">
+      {/* Main Image — constrained size */}
+      <div className="relative w-full max-w-sm mx-auto bg-bg-secondary overflow-hidden group aspect-[3/4]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={validImages[mainImageIndex] || "/placeholder.png"}
@@ -51,7 +51,7 @@ export default function ProductGallery({ images, title }) {
 
       {/* Thumbnails strip */}
       {total > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 mt-4 max-w-md mx-auto custom-scrollbar">
+        <div className="flex gap-3 overflow-x-auto pb-3 mt-4 max-w-sm mx-auto custom-scrollbar">
           {validImages.map((img, i) => (
             <button
               key={i}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import HeroContent from "@/components/HeroContent";
 import { API_BASE as API, API_BASE } from "@/lib/config";
 
@@ -101,39 +102,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SECTION 5 - FEATURED PRODUCTS */}
-      <section className="py-24 bg-bg-secondary border-t border-border-color">
-        <div className="container mx-auto px-4 md:px-8">
-          <div className="flex justify-between items-end mb-12">
-            <h2 className="font-serif text-gold text-2xl tracking-[0.3em] uppercase">
-              New Arrivals
-            </h2>
-            <Link href="/all" className="text-text-secondary hover:text-gold transition-colors text-xs tracking-widest uppercase pb-1 border-b border-transparent hover:border-gold">
-              View All
-            </Link>
-          </div>
-
-          {newArrivals.length === 0 ? (
-            <div className="text-center text-text-muted py-12">
-              <p>No products available. Please add products in Appwrite.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {newArrivals.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          )}
-          
-          <div className="mt-16 flex justify-center">
-            <Link 
-              href="/all"
-              className="inline-block px-12 py-4 bg-white text-black text-xs font-bold tracking-widest uppercase border border-white hover:bg-transparent hover:text-white transition-colors rounded-none"
-            >
-              View All Products
-            </Link>
-          </div>
-        </div>
+      {/* SECTION 5 - FEATURED PRODUCTS (Paginated) */}
+      <section className="py-12 bg-bg-secondary border-t border-border-color">
+        <ProductGrid title="NEW ARRIVALS" hideSidebar={true} />
       </section>
 
       {/* SECTION 7 - PROMISE STRIP */}

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/AddToCartButton";
 import AddToWishlistButton from "@/components/AddToWishlistButton";
-import ProductGallery from "@/components/ProductGallery";
+import ProductGallery from "@/components/ProductGallery";
 import { API_BASE as API, API_BASE } from "@/lib/config";
 
 export const revalidate = 60;
@@ -45,7 +45,7 @@ export default async function ProductDetailPage({ params }) {
     product = data.data;
 
     // Fetch related products (same vendor, different handle)
-    const relatedRes = await fetch(`${API_BASE}/products?limit=4&search=${encodeURIComponent(product.vendor || '')}`);
+    const relatedRes = await fetch(`${API_BASE}/products?limit=8&search=${encodeURIComponent(product.vendor || '')}`);
     const relatedData = await relatedRes.json();
     relatedProducts = (relatedData.data || []).filter(p => p.Handle !== handle).slice(0, 4);
 
@@ -148,27 +148,29 @@ export default async function ProductDetailPage({ params }) {
               </div>
             )}
 
-            {/* Related Products */}
-            {relatedProducts.length > 0 && (
-              <div>
-                <h3 className="font-serif text-white text-lg tracking-widest uppercase mb-4">You May Also Like</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {relatedProducts.map((rp) => (
-                    <Link key={rp.Handle} href={`/product/${rp.Handle}`} className="group">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={rp.images?.[0] || "/placeholder.png"}
-                        alt={rp.Title}
-                        className="w-full aspect-square object-cover mb-2 group-hover:opacity-80 transition-opacity"
-                      />
-                      <p className="text-white text-xs truncate">{rp.Title}</p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Related Products - Full Width Row Below */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-24 border-t border-border-color pt-16">
+            <h3 className="font-serif text-white text-2xl tracking-[0.2em] uppercase mb-12 text-center">You May Also Like</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+              {relatedProducts.map((rp) => (
+                <Link key={rp.Handle} href={`/product/${rp.Handle}`} className="group block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={rp.images?.[0] || "/placeholder.png"}
+                    alt={rp.Title}
+                    className="w-full aspect-[4/5] object-cover mb-4 group-hover:opacity-80 transition-opacity border border-transparent group-hover:border-gold"
+                  />
+                  <p className="text-white text-sm font-light tracking-wide truncate mb-1">{rp.Title}</p>
+                  <p className="text-gold text-xs">${Number(rp['Variant Price']).toFixed(2)}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Filter, Eye, Phone, Mail, MapPin, X } from "lucide-react";
+import { Search, Filter, Eye, Phone, Mail, MapPin, X, CheckCircle, Clock, ShieldAlert } from "lucide-react";
 import { API_BASE } from "@/lib/config";
 
 export default function AdminOrdersPage() {
@@ -10,28 +10,61 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem("cs_token");
+      const res = await fetch(`${API_BASE}/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      const list = data.orders || data.data || [];
+      setOrders(list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    } catch (err) {
+      console.error("Failed to fetch orders", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem("cs_token");
-        const res = await fetch(`${API_BASE}/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        const list = data.orders || data.data || [];
-        setOrders(list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-      } catch (err) {
-        console.error("Failed to fetch orders", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchOrders();
   }, []);
 
+  const handleUpdateStatus = async (orderId, status) => {
+    setUpdating(true);
+    setMessage({ type: "", text: "" });
+    try {
+      const token = localStorage.getItem("cs_token");
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setMessage({ type: "success", text: `Order marked as ${status}!` });
+        // Update local state
+        setOrders(orders.map(o => o._id === orderId ? { ...o, status, isDelivered: status === "Delivered" } : o));
+        setSelectedOrder(prev => prev ? { ...prev, status, isDelivered: status === "Delivered" } : null);
+      } else {
+        throw new Error(data.message || "Failed to update status");
+      }
+    } catch (err) {
+      setMessage({ type: "error", text: err.message || "Backend update failed. Please check if the status update route exists on your server." });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const filtered = orders.filter((o) => {
-    const name = `${o.shippingAddress?.firstName} ${o.shippingAddress?.lastName}`.toLowerCase();
+    const name = `${o.shippingAddress?.firstName || ""} ${o.shippingAddress?.lastName || ""}`.toLowerCase();
     const email = (o.shippingAddress?.email || "").toLowerCase();
     const phone = (o.shippingAddress?.phone || "").toLowerCase();
     const id = (o._id || "").toLowerCase();
@@ -146,12 +179,41 @@ export default function AdminOrdersPage() {
                 <h2 className="text-white text-lg font-light">Order Details</h2>
                 <p className="text-[#b8972e] text-xs font-mono mt-1">#{selectedOrder._id?.slice(-8).toUpperCase()}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="text-[#555] hover:text-white transition-colors p-1">
+              <button onClick={() => { setSelectedOrder(null); setMessage({ type: "", text: "" }); }} className="text-[#555] hover:text-white transition-colors p-1">
                 <X size={20} />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
+              {message.text && (
+                <div className={`p-4 rounded flex items-center gap-3 text-sm ${
+                  message.type === "success" ? "bg-green-500/10 border border-green-500/30 text-green-400" : "bg-red-500/10 border border-red-500/30 text-red-400"
+                }`}>
+                  {message.type === "success" ? <CheckCircle size={16} /> : <ShieldAlert size={16} />}
+                  {message.text}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {!selectedOrder.isDelivered && selectedOrder.status !== "Cancelled" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleUpdateStatus(selectedOrder._id, "Delivered")}
+                    disabled={updating}
+                    className="bg-green-600 text-white py-3 rounded text-xs tracking-widest uppercase font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {updating ? "Updating..." : <><CheckCircle size={14} /> Mark Delivered</>}
+                  </button>
+                  <button
+                    onClick={() => handleUpdateStatus(selectedOrder._id, "Cancelled")}
+                    disabled={updating}
+                    className="bg-red-600/10 border border-red-600/30 text-red-500 py-3 rounded text-xs tracking-widest uppercase font-bold hover:bg-red-600/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {updating ? "Updating..." : <><X size={14} /> Cancel Order</>}
+                  </button>
+                </div>
+              )}
+
               {/* Customer Info */}
               <div>
                 <h3 className="text-[#b8972e] text-xs tracking-widest uppercase mb-3">Customer Information</h3>
@@ -159,7 +221,7 @@ export default function AdminOrdersPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-[#b8972e]/10 flex items-center justify-center">
                       <span className="text-[#b8972e] text-sm font-medium">
-                        {selectedOrder.shippingAddress?.firstName?.[0]?.toUpperCase()}
+                        {selectedOrder.shippingAddress?.firstName?.[0]?.toUpperCase() || "?"}
                       </span>
                     </div>
                     <div>

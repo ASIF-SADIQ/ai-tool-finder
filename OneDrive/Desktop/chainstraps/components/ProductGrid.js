@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import FilterSidebar from "./FilterSidebar";
 import ProductCard, { ProductCardSkeleton } from "./ProductCard";
-import { Filter } from "lucide-react";
-import { API_BASE as API, API_BASE } from "@/lib/config";
+import { Filter } from "lucide-react";
+import { API_BASE } from "@/lib/config";
 
-export default function ProductGrid({ title, initialCategory }) {
+export default function ProductGrid({ title, initialCategory, hideSidebar = false }) {
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
 
   const limit = 12;
@@ -22,6 +21,29 @@ export default function ProductGrid({ title, initialCategory }) {
   });
   const [sort, setSort] = useState("newest");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Dynamic Title Logic — reflects both category and brand selections
+  const buildDisplayTitle = () => {
+    const parts = [];
+
+    // Brand part
+    if (filters.brands.length === 1) {
+      parts.push(filters.brands[0].toUpperCase());
+    } else if (filters.brands.length > 1) {
+      parts.push("SELECTED BRANDS");
+    }
+
+    // Category part
+    if (filters.categories.length === 1) {
+      parts.push(filters.categories[0].toUpperCase());
+    } else if (filters.categories.length > 1) {
+      parts.push("MIXED CATEGORIES");
+    }
+
+    if (parts.length > 0) return parts.join(" · ");
+    return title || "ALL PRODUCTS";
+  };
+  const displayTitle = buildDisplayTitle();
 
   const buildQueryString = useCallback(
     (pageNum) => {
@@ -42,56 +64,72 @@ export default function ProductGrid({ title, initialCategory }) {
   );
 
   const fetchProducts = useCallback(
-    async (isLoadMore = false) => {
+    async (pageNum) => {
       try {
-        if (!isLoadMore) setLoading(true);
-        else setLoadingMore(true);
-
-        const currentPage = isLoadMore ? page : 1;
-        const res = await fetch(`${API_BASE}/products?${buildQueryString(currentPage)}`);
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/products?${buildQueryString(pageNum)}`);
         const data = await res.json();
-
-        const fetched = data.data || [];
-        if (isLoadMore) {
-          setProducts((prev) => [...prev, ...fetched]);
-        } else {
-          setProducts(fetched);
-        }
+        setProducts(data.data || []);
         setTotal(data.total || 0);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
-        setLoadingMore(false);
       }
     },
-    [filters, sort, page, buildQueryString]
+    [buildQueryString]
   );
 
+  // Trigger fetch when filters, sort, or page changes
+  useEffect(() => {
+    fetchProducts(page);
+  }, [filters, sort, page, fetchProducts]);
+
+  // Reset to page 1 when filters or sort change
   useEffect(() => {
     setPage(1);
-    fetchProducts(false);
   }, [filters, sort]);
 
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchProducts(true);
+  const totalPages = Math.ceil(total / limit);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, page - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   return (
     <>
       <div className="container mx-auto px-4 md:px-8 py-12 flex flex-col md:flex-row gap-8">
         {/* Left Sidebar - Desktop */}
-        <div className="hidden md:block w-72 flex-shrink-0">
-          <FilterSidebar onFilterChange={setFilters} currentFilters={filters} />
-        </div>
+        {!hideSidebar && (
+          <div className="hidden md:block w-72 flex-shrink-0">
+            <FilterSidebar onFilterChange={setFilters} currentFilters={filters} />
+          </div>
+        )}
 
         {/* Right Main Content */}
         <div className="flex-1">
           {/* Sorting & View Bar */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-border-color">
-            <h1 className="font-serif text-white text-3xl mb-4 md:mb-0">{title}</h1>
+            <h1 className="font-serif text-white text-3xl mb-4 md:mb-0">{displayTitle}</h1>
             <div className="flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
               <span className="text-text-muted text-sm tracking-widest uppercase">
                 {total.toLocaleString()} PIECES
@@ -109,7 +147,7 @@ export default function ProductGrid({ title, initialCategory }) {
           </div>
 
           {/* Product Grid */}
-          {loading && products.length === 0 ? (
+          {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
@@ -127,14 +165,40 @@ export default function ProductGrid({ title, initialCategory }) {
                 ))}
               </div>
 
-              {products.length < total && (
-                <div className="mt-12 text-center">
+              {/* Numbered Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-16 flex justify-center items-center space-x-2">
+                  {/* Previous Button */}
                   <button
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
-                    className="luxury-button-outline px-10 py-4 text-sm font-bold disabled:opacity-50"
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                    className="w-10 h-10 flex items-center justify-center border border-border-color text-text-secondary hover:border-gold hover:text-gold disabled:opacity-30 disabled:hover:text-text-secondary disabled:hover:border-border-color transition-all duration-300"
                   >
-                    {loadingMore ? "LOADING..." : "LOAD MORE"}
+                    &larr;
+                  </button>
+
+                  {/* Page Numbers */}
+                  {getPageNumbers().map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`w-10 h-10 flex items-center justify-center border text-xs font-bold transition-all duration-300 ${
+                        page === pageNum
+                          ? "bg-gold border-gold text-black"
+                          : "border-border-color text-text-secondary hover:border-gold hover:text-gold"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                    className="w-10 h-10 flex items-center justify-center border border-border-color text-text-secondary hover:border-gold hover:text-gold disabled:opacity-30 disabled:hover:text-text-secondary disabled:hover:border-border-color transition-all duration-300"
+                  >
+                    &rarr;
                   </button>
                 </div>
               )}
@@ -144,17 +208,19 @@ export default function ProductGrid({ title, initialCategory }) {
       </div>
 
       {/* Mobile Fixed Filter Button */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-bg-primary/95 backdrop-blur border-t border-border-color z-40">
-        <button
-          onClick={() => setIsMobileFilterOpen(true)}
-          className="bg-gold text-black w-full py-4 text-sm font-bold tracking-widest uppercase flex justify-center items-center"
-        >
-          <Filter size={18} className="mr-2" /> FILTER & SORT
-        </button>
-      </div>
+      {!hideSidebar && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-bg-primary/95 backdrop-blur border-t border-border-color z-40">
+          <button
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="bg-gold text-black w-full py-4 text-sm font-bold tracking-widest uppercase flex justify-center items-center"
+          >
+            <Filter size={18} className="mr-2" /> FILTER & SORT
+          </button>
+        </div>
+      )}
 
       {/* Mobile Filter Drawer */}
-      {isMobileFilterOpen && (
+      {isMobileFilterOpen && !hideSidebar && (
         <div className="md:hidden fixed inset-0 z-50 bg-bg-primary flex flex-col">
           <FilterSidebar
             onFilterChange={setFilters}
