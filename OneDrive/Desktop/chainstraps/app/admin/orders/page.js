@@ -9,6 +9,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -74,7 +75,11 @@ export default function AdminOrdersPage() {
       (filter === "pending" && !o.isDelivered && o.status !== "Cancelled") ||
       (filter === "delivered" && o.isDelivered) ||
       (filter === "cancelled" && o.status === "Cancelled");
-    return matchesSearch && matchesFilter;
+      
+    // Exact match for the date using YYYY-MM-DD
+    const matchesDate = !dateFilter || new Date(o.createdAt).toISOString().split('T')[0] === dateFilter;
+    
+    return matchesSearch && matchesFilter && matchesDate;
   });
 
   const statusBadge = (order) => {
@@ -91,7 +96,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex flex-col xl:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" />
           <input
@@ -102,7 +107,27 @@ export default function AdminOrdersPage() {
             className="w-full bg-[#111] border border-[#222] text-white pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#b8972e] transition-colors placeholder-[#444] rounded"
           />
         </div>
-        <div className="flex gap-2">
+        
+        <div className="relative min-w-[160px]">
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-full h-full bg-[#111] border border-[#222] text-white px-4 py-3 text-sm focus:outline-none focus:border-[#b8972e] transition-colors rounded [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+            title="Filter by Date"
+          />
+          {dateFilter && (
+            <button 
+              onClick={() => setDateFilter("")} 
+              className="absolute -top-2 -right-2 bg-[#222] text-white rounded-full p-1 border border-[#333] hover:bg-[#333] hover:text-[#b8972e] transition-colors z-10"
+              title="Clear date filter"
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {["all", "pending", "delivered", "cancelled"].map((f) => (
             <button
               key={f}
