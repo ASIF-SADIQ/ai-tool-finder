@@ -18,7 +18,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4 text-text-muted">
               <a href="#" className="hover:text-gold transition-colors"><Instagram size={20} /></a>
-              <a href="https://pinterest.com/chainandstraps" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><Facebook size={20} /></a>
+              <a href="https://pinterest.com/chainandstrap" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><Facebook size={20} /></a>
               <a href="#" className="hover:text-gold transition-colors"><Twitter size={20} /></a>
               <a href="#" className="hover:text-gold transition-colors"><Youtube size={20} /></a>
             </div>

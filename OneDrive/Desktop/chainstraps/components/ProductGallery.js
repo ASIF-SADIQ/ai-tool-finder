@@ -6,7 +6,18 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export default function ProductGallery({ images, title }) {
   const [mainImageIndex, setMainImageIndex] = useState(0);
 
-  const validImages = (images || []).filter(Boolean);
+  // ULTRA FAST IMAGE OPTIMIZATION: Shrink huge images to max 800px width via global proxy
+  const validImages = (images || []).filter(Boolean).map(img => {
+    let url = img;
+    if (url.includes("digitaloceanspaces.com") && !url.includes(".cdn.")) {
+        url = url.replace("sfo3.digitaloceanspaces.com", "sfo3.cdn.digitaloceanspaces.com");
+    }
+    if (url.includes("digitaloceanspaces.com")) {
+        return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&output=webp&q=80`;
+    }
+    return url;
+  });
+
   const total = validImages.length;
 
   const prev = () => setMainImageIndex((i) => (i - 1 + total) % total);

@@ -45,28 +45,7 @@ export default function HeroContent() {
         COMING<br />SOON
       </motion.h1>
       
-      <motion.div
-        variants={itemVariants}
-        className="flex flex-col sm:flex-row items-center justify-center gap-6"
-      >
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link
-            href="/all"
-            className="bg-gold text-black px-10 py-4 text-sm font-bold tracking-widest w-full sm:w-auto text-center inline-block transition-colors hover:bg-[#e8c98a]"
-          >
-            EXPLORE ATELIER
-          </Link>
-        </motion.div>
-        
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link
-            href="/all#brands"
-            className="bg-transparent border border-gold text-gold px-10 py-4 text-sm font-bold tracking-widest w-full sm:w-auto text-center inline-block transition-colors hover:bg-gold/10"
-          >
-            DISCOVER BRANDS
-          </Link>
-        </motion.div>
-      </motion.div>
+      {/* Buttons removed for Coming Soon mode to keep it clean */}
     </motion.div>
   );
 }

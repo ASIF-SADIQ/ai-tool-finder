@@ -15,8 +15,32 @@ export default function ProductCard({ product }) {
 
   // MongoDB fields - images is now an array from aggregation grouping
   const images = (product.images || []).filter(Boolean);
-  const mainImage = images[0] || product["Image Src"] || "/placeholder.png";
-  const hoverImage = images[1] || mainImage;
+  let mainImage = images[0] || product["Image Src"] || "/placeholder.png";
+  let hoverImage = images[1] || mainImage;
+  
+  // Convert standard DO Spaces link to the ultra-fast CDN link on the fly
+  if (mainImage.includes("digitaloceanspaces.com") && !mainImage.includes(".cdn.")) {
+      mainImage = mainImage.replace("sfo3.digitaloceanspaces.com", "sfo3.cdn.digitaloceanspaces.com");
+  }
+  if (hoverImage.includes("digitaloceanspaces.com") && !hoverImage.includes(".cdn.")) {
+      hoverImage = hoverImage.replace("sfo3.digitaloceanspaces.com", "sfo3.cdn.digitaloceanspaces.com");
+  }
+  
+  // ULTRA FAST IMAGE OPTIMIZATION: Wrap DO Spaces URLs with Cloudflare-backed proxy to resize 5MB images to ~30KB WebP
+  if (mainImage.includes("digitaloceanspaces.com")) {
+      mainImage = `https://wsrv.nl/?url=${encodeURIComponent(mainImage)}&w=500&output=webp&q=80`;
+  }
+  if (hoverImage.includes("digitaloceanspaces.com")) {
+      hoverImage = `https://wsrv.nl/?url=${encodeURIComponent(hoverImage)}&w=500&output=webp&q=80`;
+  }
+  
+  // Fix Google Drive links so they display inline instead of forcing a download
+  if (mainImage.includes("drive.google.com") && mainImage.includes("export=download")) {
+      mainImage = mainImage.replace(/export=download/g, "export=view");
+  }
+  if (hoverImage.includes("drive.google.com") && hoverImage.includes("export=download")) {
+      hoverImage = hoverImage.replace(/export=download/g, "export=view");
+  }
   const title = product.Title || "Untitled";
   const vendor = product.vendor || product.Vendor || "";
   const price = product["Variant Price"] || product.price || 0;
@@ -34,10 +58,10 @@ export default function ProductCard({ product }) {
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="absolute inset-0 transition-opacity duration-500 z-10 opacity-100 group-hover:opacity-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={mainImage}
             alt={title}
+            loading="lazy"
             referrerPolicy="no-referrer"
             className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
           />
@@ -45,12 +69,12 @@ export default function ProductCard({ product }) {
 
         {/* Hover image (second image if available) */}
         <div className={`absolute inset-0 transition-opacity duration-500 z-0 ${isHovered ? "opacity-100" : "opacity-0"}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={hoverImage}
             alt={`${title} alternate`}
+            loading="lazy"
             referrerPolicy="no-referrer"
-            className="object-cover w-full h-full transition-transform duration-700 scale-105"
+            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
           />
         </div>
 
