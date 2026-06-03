@@ -42,7 +42,7 @@ export default function HeroContent() {
         variants={itemVariants}
         className="font-serif text-white text-5xl md:text-7xl lg:text-[8rem] font-extralight leading-none mb-12"
       >
-        LUXURY<br />REDEFINED
+        COMING<br />SOON
       </motion.h1>
       
       <motion.div
