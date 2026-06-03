@@ -95,7 +95,7 @@ export default function ProductGrid({ title, initialCategory, hideSidebar = fals
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Removed window.scrollTo so it doesn't jump to the top
     }
   };
 
@@ -154,8 +154,43 @@ export default function ProductGrid({ title, initialCategory, hideSidebar = fals
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="py-20 text-center text-text-muted">
-              <p>No pieces match your criteria. Please adjust your filters.</p>
+            <div style={{
+              textAlign: 'center',
+              padding: '80px 20px',
+              background: 'linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(0,0,0,0) 100%)',
+              border: '1px solid rgba(212,175,55,0.15)',
+              borderRadius: '2px',
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✦</div>
+              <h2 style={{
+                fontFamily: 'serif',
+                fontSize: '28px',
+                letterSpacing: '0.3em',
+                color: '#d4af37',
+                textTransform: 'uppercase',
+                marginBottom: '16px',
+              }}>
+                New Collection Arriving Soon
+              </h2>
+              <p style={{
+                fontSize: '14px',
+                letterSpacing: '0.15em',
+                color: '#999',
+                textTransform: 'uppercase',
+                marginBottom: '32px',
+              }}>
+                We are restocking our premium luxury catalog. Stay tuned.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
+                {['Louis Vuitton', 'Gucci', 'Prada', 'Chanel', 'Dior'].map(brand => (
+                  <span key={brand} style={{
+                    fontSize: '11px',
+                    letterSpacing: '0.3em',
+                    color: 'rgba(212,175,55,0.6)',
+                    textTransform: 'uppercase',
+                  }}>{brand}</span>
+                ))}
+              </div>
             </div>
           ) : (
             <>
